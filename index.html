@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html ng-app="TimerApp">
+
+<head>
+    <title>AngularJS Timer App</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+    <style>
+        body {
+            background-image: url('background.jpg'); /* Replace with your image path */
+            background-size: cover;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+            color: #fff;
+        }
+
+        .timer-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .timer {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        .timer h1 {
+            font-size: 3em;
+            margin: 0;
+        }
+
+        .timer-form {
+            margin-bottom: 20px;
+        }
+
+        .timer-form input[type="number"] {
+            width: 50px;
+            text-align: center;
+            margin: 0 5px;
+        }
+
+        .timer-buttons button {
+            margin: 0 5px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .timer-buttons button:hover {
+            background-color: #45a049;
+        }
+
+        .timer-buttons button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body ng-controller="TimerController as timerCtrl">
+    <div class="timer-container">
+        <div class="timer">
+            <h1>{{ timerCtrl.displayTime }}</h1>
+            <form class="timer-form" ng-submit="timerCtrl.startTimer()">
+                <label>Enter timer duration:</label>
+                <input type="number" min="0" ng-model="timerCtrl.hours" placeholder="Hours">
+                <input type="number" min="0" ng-model="timerCtrl.minutes" placeholder="Minutes">
+                <input type="number" min="0" ng-model="timerCtrl.seconds" placeholder="Seconds">
+                <button type="submit">Start</button>
+            </form>
+            <div class="timer-buttons">
+                <button ng-click="timerCtrl.pauseTimer()" ng-disabled="!timerCtrl.timerRunning">Pause</button>
+                <button ng-click="timerCtrl.resetTimer()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        angular.module('TimerApp', [])
+            .controller('TimerController', function($interval) {
+                var vm = this;
+                vm.hours = 0;
+                vm.minutes = 0;
+                vm.seconds = 0;
+                vm.timerRunning = false;
+                vm.displayTime = '00:00:00';
+
+                var timerInterval;
+
+                vm.startTimer = function() {
+                    var totalSeconds = vm.hours * 3600 + vm.minutes * 60 + vm.seconds;
+                    if (totalSeconds > 0) {
+                        vm.timerRunning = true;
+                        vm.displayTime = formatTime(totalSeconds);
+                        timerInterval = $interval(function() {
+                            totalSeconds--;
+                            vm.displayTime = formatTime(totalSeconds);
+                            if (totalSeconds <= 0) {
+                                vm.pauseTimer();
+                            }
+                        }, 1000);
+                    }
+                };
+
+                vm.pauseTimer = function() {
+                    if (vm.timerRunning) {
+                        vm.timerRunning = false;
+                        $interval.cancel(timerInterval);
+                    }
+                };
+
+                vm.resetTimer = function() {
+                    vm.timerRunning = false;
+                    $interval.cancel(timerInterval);
+                    vm.hours = 0;
+                    vm.minutes = 0;
+                    vm.seconds = 0;
+                    vm.displayTime = '00:00:00';
+                };
+
+                function formatTime(seconds) {
+                    var hours = Math.floor(seconds / 3600);
+                    var minutes = Math.floor((seconds % 3600) / 60);
+                    var secs = seconds % 60;
+                    return ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2) + ':' + ('0' + secs).slice(-2);
+                }
+            });
+    </script>
+</body>
+
+</html>
